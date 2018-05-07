@@ -9,18 +9,16 @@ public class InGameAd : MonoBehaviour
     private SpriteRenderer spriteRenderer;
 
     private float timeSeen = 0; // seconds
-    private List<float> timeSeenArray;
-    private bool isVisible;
+    AdVisibleObject adVisibleObject = null;
 
-    private void Awake()
+    private void Start()
     {
         UpdateAdTexture();
-        timeSeenArray = new List<float>();
     }
 
     private void Update()
     {
-        if (isVisible)
+        if (null != adVisibleObject)
             timeSeen += Time.deltaTime;
     }
 
@@ -59,19 +57,24 @@ public class InGameAd : MonoBehaviour
 
     void OnBecameVisible()
     {
-        print("Visible: " + gameObject.name);
+        adVisibleObject = new AdVisibleObject
+        {
+            gameObjectName = gameObject.name,
+            visibleStartTimestamp = GetEpochTimestamp()
+
+        };
+
         timeSeen = 0;
-        isVisible = true;
     }
 
     void OnBecameInvisible()
     {
-        isVisible = false;
-        timeSeenArray.Add(timeSeen);
-        foreach (float t in timeSeenArray)
-            print(t);
-
-        print("Invisible: " + gameObject.name);
+        adVisibleObject.visibleEndTimestamp = GetEpochTimestamp();
+        inGameAds.SubmitAdVisibleObject(adVisibleObject);
     }
 
+    private int GetEpochTimestamp()
+    {
+        return (int)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds;
+    }
 }
