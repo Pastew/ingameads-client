@@ -8,8 +8,8 @@ public class InGameAds : MonoBehaviour {
 
     public string applicationName;
 
-    private readonly int AD_VISIBLE_OBJECT_LIST_MAX_SIZE = 5; // How many times user will see advert to uploading stats to server
-    private readonly string STATS_SERVER_URL = "http://localhost:7171/advert/";
+    private readonly int AD_VISIBLE_OBJECT_LIST_MAX_SIZE = 2; // How many times user will see advert to uploading stats to server
+    private readonly string STATS_SERVER_URL = "http://localhost:7171/upload_stats/";
     private readonly string IMAGE_PROVIDER_SERVER_URL = "http://localhost:7070/advert/";
 
     private string imageUrl;
@@ -78,8 +78,10 @@ public class InGameAds : MonoBehaviour {
     internal void SubmitAdVisibleObject(AdVisibleObject adVisibleObject)
     {
         adVisibleObjectList.Add(adVisibleObject);
-        if (adVisibleObjectList.Count > AD_VISIBLE_OBJECT_LIST_MAX_SIZE)
+        if (adVisibleObjectList.Count >= AD_VISIBLE_OBJECT_LIST_MAX_SIZE)
             UploadToServerAdVisibleObjectList();
+        else
+            print((AD_VISIBLE_OBJECT_LIST_MAX_SIZE - adVisibleObjectList.Count) + " more to upload");
     }
 
     void OnApplicationQuit()
@@ -89,15 +91,52 @@ public class InGameAds : MonoBehaviour {
 
     private void UploadToServerAdVisibleObjectList()
     {
-        string json = JsonUtility.ToJson(adVisibleObjectList);
+        string json = "[";
+        foreach (AdVisibleObject a in adVisibleObjectList)
+        {
+            json += JsonUtility.ToJson(a) + ",";
+        }
+        json = json.Remove(json.Length - 1);
+        json += "]";
+
         adVisibleObjectList.Clear();
-        StartCoroutine(UploadJsonToServerCoroutine(json));
+        StartCoroutine(postRequest(STATS_SERVER_URL + applicationName, json));
     }
 
     IEnumerator UploadJsonToServerCoroutine(string json)
     {
-        UnityWebRequest www = UnityWebRequest.Post(STATS_SERVER_URL, json);
+        print("UploadJsonToServerCoroutine started");
+        byte[] postData = System.Text.Encoding.UTF8.GetBytes(json);
+
+        UnityWebRequest www = UnityWebRequest.Put(STATS_SERVER_URL + applicationName, postData);
         www.SetRequestHeader("Accept", "application/json");
+
         yield return www.SendWebRequest();
+
+        if(www.isNetworkError)
+                Debug.Log("Error While Sending: " + www.error);
+        else
+                Debug.Log("Received: " + www.downloadHandler.text);
+    }
+
+    IEnumerator postRequest(string url, string json)
+    {
+        var uwr = new UnityWebRequest(url, "POST");
+        byte[] jsonToSend = new System.Text.UTF8Encoding().GetBytes(json);
+        uwr.uploadHandler = (UploadHandler)new UploadHandlerRaw(jsonToSend);
+        uwr.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
+        uwr.SetRequestHeader("Content-Type", "application/json");
+
+        //Send the request then wait here until it returns
+        yield return uwr.SendWebRequest();
+
+        if (uwr.isNetworkError)
+        {
+            Debug.Log("Error While Sending: " + uwr.error);
+        }
+        else
+        {
+            Debug.Log("Received: " + uwr.downloadHandler.text);
+        }
     }
 }

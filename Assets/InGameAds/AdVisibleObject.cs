@@ -1,8 +1,10 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 
+[Serializable]
 public class AdVisibleObject
 {
-    public string gameObjectName { get; set; }
-    public int visibleStartTimestamp { get; set; }
-    public int visibleEndTimestamp { get; set; }
+    public string gameObjectName;
+    public int visibleStartTimestamp;
+    public int visibleEndTimestamp;
 }

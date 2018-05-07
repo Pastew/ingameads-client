@@ -61,7 +61,6 @@ public class InGameAd : MonoBehaviour
         {
             gameObjectName = gameObject.name,
             visibleStartTimestamp = GetEpochTimestamp()
-
         };
 
         timeSeen = 0;
