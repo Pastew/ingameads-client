@@ -48,31 +48,31 @@ public class InGameAds : MonoBehaviour {
             print("Something gone wrong, can't download imageUrl for game " + applicationName);
             yield return "failed";
         }
-
-        if (null == imageUrl)
+        else if (null == imageUrl)
         {
             print("Something gone wrong, can't download imageUrl for game " + applicationName);
             yield return "failed";
         }
-
-        if ("default" == imageUrl)
+        else if ("default".Equals(imageUrl))
         {
             print("This game have no current advert rented, I will leave the default sprite.");
             yield return "failed";
         }
+        else
+        {
+            print("Got imageUrl from Image Provider: " + imageUrl);
+            yield return new WaitForSeconds(2);
+            www = new WWW(imageUrl);
+            yield return www;
+            adTexture = www.texture;
 
-        print("Got imageUrl from Image Provider: " + imageUrl);
-        yield return new WaitForSeconds(2);
-        www = new WWW(imageUrl);
-        yield return www;
-        adTexture = www.texture;
-
-        /*
-        SpriteRenderer sr = gameObject.GetComponent<SpriteRenderer>();
-        sr.sprite = Sprite.Create(www.texture, new Rect(0, 0, www.texture.width, www.texture.height), new Vector2(0, 0));
-        */
-        foreach (InGameAd ad in FindObjectsOfType<InGameAd>())
-            ad.UpdateAdTexture();
+            /*
+            SpriteRenderer sr = gameObject.GetComponent<SpriteRenderer>();
+            sr.sprite = Sprite.Create(www.texture, new Rect(0, 0, www.texture.width, www.texture.height), new Vector2(0, 0));
+            */
+            foreach (InGameAd ad in FindObjectsOfType<InGameAd>())
+                ad.UpdateAdTexture();
+        }
     }
 
     internal void SubmitAdVisibleObject(AdVisibleObject adVisibleObject)
