@@ -59,6 +59,7 @@ public class InGameAd : MonoBehaviour
     {
         adVisibleObject = new AdVisibleObject
         {
+            advertId = inGameAds.GetAdvertId(),
             gameObjectName = gameObject.name,
             visibleStartTimestamp = GetEpochTimestamp()
         };

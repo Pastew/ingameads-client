@@ -12,7 +12,7 @@ public class InGameAds : MonoBehaviour {
     private readonly string STATS_SERVER_URL = "http://localhost:7171/upload_stats/";
     private readonly string IMAGE_PROVIDER_SERVER_URL = "http://localhost:7070/advert/";
 
-    private string imageUrl;
+    private Advert advert;
     private Texture adTexture;
     private List<AdVisibleObject> adVisibleObjectList;
 
@@ -42,37 +42,43 @@ public class InGameAds : MonoBehaviour {
     {
         WWW www = new WWW(IMAGE_PROVIDER_SERVER_URL + applicationName);
         yield return www;
-        imageUrl = www.text;
-        if (www.text.Contains("\"status\":404"))
+        Advert advert = JsonUtility.FromJson<Advert>(www.text);
+        this.advert = advert;
+
+        if (null == advert.imageUrl)
         {
             print("Something gone wrong, can't download imageUrl for game " + applicationName);
             yield return "failed";
         }
-        else if (null == imageUrl)
+        else if (advert.imageUrl.Contains("\"status\":404"))
         {
             print("Something gone wrong, can't download imageUrl for game " + applicationName);
             yield return "failed";
         }
-        else if ("default".Equals(imageUrl))
+        else if ("default".Equals(advert.imageUrl))
         {
             print("This game have no current advert rented, I will leave the default sprite.");
             yield return "failed";
         }
         else
         {
-            print("Got imageUrl from Image Provider: " + imageUrl);
+            print("Got imageUrl from Image Provider: " + advert.imageUrl);
             yield return new WaitForSeconds(2);
-            www = new WWW(imageUrl);
+            www = new WWW(advert.imageUrl);
             yield return www;
             adTexture = www.texture;
 
-            /*
-            SpriteRenderer sr = gameObject.GetComponent<SpriteRenderer>();
-            sr.sprite = Sprite.Create(www.texture, new Rect(0, 0, www.texture.width, www.texture.height), new Vector2(0, 0));
-            */
             foreach (InGameAd ad in FindObjectsOfType<InGameAd>())
                 ad.UpdateAdTexture();
         }
+    }
+
+    internal string GetAdvertId()
+    {
+        if (null == advert)
+            return "0";
+        else
+            return advert.id;
     }
 
     internal void SubmitAdVisibleObject(AdVisibleObject adVisibleObject)
