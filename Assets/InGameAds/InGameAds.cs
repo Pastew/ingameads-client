@@ -100,6 +100,7 @@ public class InGameAds : MonoBehaviour {
         string json = "[";
         foreach (AdVisibleObject a in adVisibleObjectList)
         {
+            a.advertId = advert.id;
             json += JsonUtility.ToJson(a) + ",";
         }
         json = json.Remove(json.Length - 1);
