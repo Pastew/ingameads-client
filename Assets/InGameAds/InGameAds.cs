@@ -63,7 +63,6 @@ public class InGameAds : MonoBehaviour {
         else
         {
             print("Got imageUrl from Image Provider: " + advert.imageUrl);
-            yield return new WaitForSeconds(2);
             www = new WWW(advert.imageUrl);
             yield return www;
             adTexture = www.texture;
@@ -108,22 +107,6 @@ public class InGameAds : MonoBehaviour {
 
         adVisibleObjectList.Clear();
         StartCoroutine(postRequest(STATS_SERVER_URL + applicationName, json));
-    }
-
-    IEnumerator UploadJsonToServerCoroutine(string json)
-    {
-        print("UploadJsonToServerCoroutine started");
-        byte[] postData = System.Text.Encoding.UTF8.GetBytes(json);
-
-        UnityWebRequest www = UnityWebRequest.Put(STATS_SERVER_URL + applicationName, postData);
-        www.SetRequestHeader("Accept", "application/json");
-
-        yield return www.SendWebRequest();
-
-        if(www.isNetworkError)
-                Debug.Log("Error While Sending: " + www.error);
-        else
-                Debug.Log("Received: " + www.downloadHandler.text);
     }
 
     IEnumerator postRequest(string url, string json)
