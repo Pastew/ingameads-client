@@ -9,8 +9,8 @@ public class InGameAds : MonoBehaviour {
     public string applicationName;
 
     private readonly int AD_VISIBLE_OBJECT_LIST_MAX_SIZE = 2; // How many times user will see advert to uploading stats to server
-    private readonly string STATS_SERVER_URL = "http://localhost:7171/upload_stats/";
-    private readonly string IMAGE_PROVIDER_SERVER_URL = "http://localhost:7070/advert/";
+    private readonly string STATS_SERVER_URL = "http://185.243.54.226:7171/upload_stats/";
+    private readonly string IMAGE_PROVIDER_SERVER_URL = "http://185.243.54.226:7070/advert/";
 
     private Advert advert;
     private Texture adTexture;
@@ -96,6 +96,13 @@ public class InGameAds : MonoBehaviour {
 
     private void UploadToServerAdVisibleObjectList()
     {
+        string json = ToJson(adVisibleObjectList);
+        adVisibleObjectList.Clear();
+        StartCoroutine(postRequest(STATS_SERVER_URL + applicationName, json));
+    }
+
+    private string ToJson(List<AdVisibleObject> adVisibleObjectList)
+    {
         string json = "[";
         foreach (AdVisibleObject a in adVisibleObjectList)
         {
@@ -105,8 +112,7 @@ public class InGameAds : MonoBehaviour {
         json = json.Remove(json.Length - 1);
         json += "]";
 
-        adVisibleObjectList.Clear();
-        StartCoroutine(postRequest(STATS_SERVER_URL + applicationName, json));
+        return json;
     }
 
     IEnumerator postRequest(string url, string json)
